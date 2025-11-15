@@ -45,7 +45,7 @@ export default function HomePage() {
         {/* Card / CTA */}
         <aside className="w-full flex items-center justify-center">
           <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-xl font-bold mb-2">Track Your Order</h2>
+            <h2 className="text-xl text-black font-bold mb-2">Track Your Order</h2>
             <p className="text-sm text-gray-500 mb-4">Enter the tracking code you received to view trip details.</p>
 
             <div className="flex gap-2">
@@ -55,7 +55,7 @@ export default function HomePage() {
                 value={trackingCode}
                 onChange={(e) => setTrackingCode(e.target.value)}
                 placeholder="e.g. VIGO-AB12CD"
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                className="flex-1 px-4 py-3 text-black border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300"
               />
               <button
                 onClick={handleTrackOrder}

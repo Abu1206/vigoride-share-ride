@@ -45,6 +45,8 @@ export default function TrackingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [focus, setFocus] = useState<null | { type: "pickup" | "dropoff" | "rider" }>(null);
 
   useEffect(() => {
     if (!trackingCode) return;
@@ -148,19 +150,65 @@ export default function TrackingPage() {
     order.drop_off_location?.coordinates?.length === 2;
 
   return (
-    <div className="flex h-screen bg-gray-900 font-sans">
-      {/* Left Side Panel */}
-      <div className="w-full max-w-md bg-white shadow-2xl m-4 rounded-3xl pl-0 pt-0 p-8 pb-0 flex flex-row  overflow-y-auto z-10 ">
-        <div className="border-r-2 border-gray-400 flex flex-col items-center justify-between mt4 p-3 bg-[#F9FAF7] ">
+    <div className="relative h-screen bg-gray-900 font-sans">
+      {/* Left fixed Side Panel */}
+      <aside
+        className={`fixed left-4 top-4 bottom-4 bg-white shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-row transition-all duration-300 ${
+          collapsed ? "w-24 p-2" : "w-full max-w-lg p-6"
+        }`}
+      >
+        <div
+          className={`flex flex-col items-center justify-between bg-[#F9FAF7] transition-all duration-300 ${
+            collapsed ? "w-20 p-2 border-r-0" : "p-3 border-r-2 border-gray-400"
+          }`}
+        >
           <h1 className="text-3xl font-bold text-yellow-500">VIGO</h1>
-          <div className=" space-y-5">
-            <Current width={50} />
-            <Rider width={50} />
-            <Expand width={50} />
+          <div className="space-y-4">
+            <button
+              title="Show destination"
+              onClick={() => setFocus({ type: "dropoff" })}
+              className="p-1 rounded hover:bg-white/30"
+            >
+              <Current width={collapsed ? 32 : 64} />
+            </button>
+
+            <button
+              title="Show rider"
+              onClick={() => {
+                const hasRider =
+                  order.courier?.latest_location?.coordinates?.length === 2;
+                if (!hasRider) {
+                  // fallback: focus pickup so user still sees something useful
+                  setFocus({ type: "pickup" });
+                  setErrorMessage("Rider location not available — focusing pickup as fallback");
+                  setTimeout(() => setErrorMessage(null), 3000);
+                  return;
+                }
+                setFocus({ type: "rider" });
+              }}
+              className="p-1 rounded hover:bg-white/30"
+            >
+              <Rider width={collapsed ? 32 : 64} />
+            </button>
+
+            <button
+              title={collapsed ? "Expand details" : "Collapse details"}
+              onClick={() => setCollapsed((s) => !s)}
+              className="p-1 rounded hover:bg-white/30"
+            >
+              <span
+                className={`inline-block transform transition-transform ${
+                  collapsed ? "-rotate-90" : "rotate-0"
+                }`}
+              >
+                <Expand width={collapsed ? 28 : 60} />
+              </span>
+            </button>
           </div>
         </div>
 
-        <div className="ml-4 mt-4 space-y-6">
+        {/* Details column */}
+        <div className={collapsed ? "hidden" : "ml-4 mt-4 space-y-6"}>
           {/* User's Details */}
           <section className=" p-2 rounded-3xl border-2 border-[#F6F6F6]">
             <h2 className="text-lg font-bold text-black mb-2">
@@ -259,27 +307,42 @@ export default function TrackingPage() {
             </div>
           </section>
         </div>
-      </div>
+      </aside>
 
-      {/* Right Side Map */}
-      {/* <div className="absolute inset-0 z-0">
+      {/* Map fills the background */}
+      <div className="absolute inset-0 z-0">
         {hasCoordinates ? (
           <Map
             pickup={{
-              lng: order.pickup_location.coordinates[0],
               lat: order.pickup_location.coordinates[1],
+              lng: order.pickup_location.coordinates[0],
             }}
             dropoff={{
-              lng: order.drop_off_location.coordinates[0],
               lat: order.drop_off_location.coordinates[1],
+              lng: order.drop_off_location.coordinates[0],
             }}
+            rider={
+              order.courier?.latest_location?.coordinates?.length === 2
+                ? {
+                    lat: order.courier.latest_location.coordinates[1],
+                    lng: order.courier.latest_location.coordinates[0],
+                  }
+                : null
+            }
+            focus={focus}
           />
         ) : (
           <div className="flex items-center justify-center h-full bg-slate-800 text-white">
             Map data not available.
           </div>
         )}
-      </div> */}
+      </div>
+      {/* Temporary toast for messages like missing rider location */}
+      {errorMessage && (
+        <div className="fixed top-6 right-6 z-30">
+          <div className="bg-black/80 text-white px-4 py-2 rounded-lg shadow">{errorMessage}</div>
+        </div>
+      )}
     </div>
   );
 }

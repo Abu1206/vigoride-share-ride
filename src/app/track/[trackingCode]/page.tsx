@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Order } from "@/types/order";
-import { notFound, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import axios from "axios";
+import ErrorBanner from "@/components/ErrorBanner";
 import { Package } from "lucide-react";
 import dynamic from "next/dynamic";
 import Rider from "@/icons/rider";
@@ -43,6 +44,7 @@ export default function TrackingPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!trackingCode) return;
@@ -50,12 +52,28 @@ export default function TrackingPage() {
     const getOrderDetails = async () => {
       try {
         setLoading(true);
+        setErrorMessage(null);
         const response = await axios.get(
           `https://api-staging.vigoride.net/v1/orders/tracking/${trackingCode}`
         );
         setOrder(response.data.data);
       } catch (err) {
         console.error("Failed to fetch order details:", err);
+        // Provide a clearer message depending on the error
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          if (status === 404) {
+            setErrorMessage(
+              `No order found for tracking code '${trackingCode}'.`
+            );
+          } else {
+            setErrorMessage(
+              "Failed to load order. Please check your network connection and try again."
+            );
+          }
+        } else {
+          setErrorMessage("An unexpected error occurred.");
+        }
         setError(true);
       } finally {
         setLoading(false);
@@ -73,8 +91,56 @@ export default function TrackingPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+        Loading order details...
+      </div>
+    );
+  }
+
   if (error || !order) {
-    notFound();
+    return (
+      <ErrorBanner
+        title={errorMessage ? "Issue loading order" : "Tracking ID not found"}
+        message={
+          errorMessage || `We couldn't find an order for the tracking code '${trackingCode}'. Please verify the code or try again.`
+        }
+        onRetry={() => {
+          setError(false);
+          setErrorMessage(null);
+          setLoading(true);
+          // trigger refetch by calling the fetch again
+          (async () => {
+            try {
+              const response = await axios.get(
+                `https://api-staging.vigoride.net/v1/orders/tracking/${trackingCode}`
+              );
+              setOrder(response.data.data);
+            } catch (err) {
+              console.error("Retry failed:", err);
+              if (axios.isAxiosError(err)) {
+                const status = err.response?.status;
+                if (status === 404) {
+                  setErrorMessage(
+                    `No order found for tracking code '${trackingCode}'.`
+                  );
+                } else {
+                  setErrorMessage(
+                    "Failed to load order. Please check your network connection and try again."
+                  );
+                }
+              } else {
+                setErrorMessage("An unexpected error occurred.");
+              }
+              setError(true);
+            } finally {
+              setLoading(false);
+            }
+          })();
+        }}
+      />
+    );
   }
 
   const hasCoordinates =

@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import Rider from "@/icons/rider";
 import Current from "@/icons/location";
 import Expand from "@/icons/expand";
+import MobileTrackingPanel from "@/components/MobileTrackingPanel";
 
 const Map = dynamic(() => import("../../../../components/GoogleMap"), {
   loading: () => <p className="text-white text-center">A map is loading...</p>,
@@ -151,9 +152,9 @@ export default function TrackingPage() {
 
   return (
     <div className="relative h-screen bg-gray-900 font-sans">
-      {/* Left fixed Side Panel */}
+      {/* Desktop Side Panel */}
       <aside
-        className={`fixed left-4 top-4 bottom-4 bg-white shadow-2xl rounded-3xl overflow-hidden z-20 flex flex-row transition-all duration-300 ${
+        className={`hidden md:flex fixed left-4 top-4 bottom-4 bg-white shadow-2xl rounded-3xl overflow-hidden z-20 flex-row transition-all duration-300 ${
           collapsed ? "w-24 p-2" : "w-full max-w-lg p-6"
         }`}
       >
@@ -208,7 +209,7 @@ export default function TrackingPage() {
         </div>
 
         {/* Details column */}
-        <div className={collapsed ? "hidden" : "ml-4 mt-4 space-y-6"}>
+        <div className={collapsed ? "hidden" : "ml-4 mt-4 space-y-6 overflow-y-auto custom-scrollbar"}>
           {/* User's Details */}
           <section className=" p-2 rounded-3xl border-2 border-[#F6F6F6]">
             <h2 className="text-lg font-bold text-black mb-2">
@@ -251,6 +252,89 @@ export default function TrackingPage() {
                 <p className="font-semibold text-sm text-black">
                   {order.drop_off_location_title}
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Driver's Details */}
+          <section className=" p-2 rounded-3xl border-2 border-[#F6F6F6]">
+            <h2 className="text-lg font-bold text-black mb-2">
+              Driver's Details
+            </h2>
+            <div className="space-y-4">
+              <p className="text-xs text-gray-400 mb-1">
+                Arriving in {order.estimated_duration_minutes}min
+              </p>
+              <div className="flex space-x-1 mb-4">
+                <div className="h-1 w-1/3 bg-yellow-500 rounded-full"></div>
+                <div className="h-1 w-1/3 bg-yellow-500 rounded-full"></div>
+                <div className="h-1 w-1/3 bg-gray-300 rounded-full"></div>
+              </div>
+              <div className="flex items-center space-x-3">
+                {/* Driver Image Placeholder */}
+                <div className="relative h-10 w-10 rounded-full bg-gray-300 flex-shrink-0">
+                  {order.courier?.image && (
+                    <img
+                      src={order.courier.image}
+                      alt="Driver"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  )}
+                  <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 text-white"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.683-1.539 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.565-1.839-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.381-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-black">
+                    {order.courier?.name} • Top Rated
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {order.courier_vehicle?.plate_number} •{" "}
+                    {order.courier_vehicle?.type},{" "}
+                    {order.courier_vehicle?.vehicle_color}.
+                  </p>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <a
+                  href={`sms:${order.courier?.phone_number?.code}${order.courier?.phone_number?.number}`}
+                  className="flex items-center justify-center w-1/2 py-2 px-4 border border-gray-300 rounded-lg text-black font-medium hover:bg-gray-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H2a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Message
+                </a>
+                <a
+                  href={`tel:${order.courier?.phone_number?.code}${order.courier?.phone_number?.number}`}
+                  className="flex items-center justify-center w-1/2 py-2 px-4 border border-gray-300 rounded-lg text-black font-medium hover:bg-gray-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  Call
+                </a>
               </div>
             </div>
           </section>
@@ -308,6 +392,16 @@ export default function TrackingPage() {
           </section>
         </div>
       </aside>
+
+      {/* Mobile Tracking Panel */}
+      <MobileTrackingPanel
+        order={order}
+        setFocus={setFocus}
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+        formatDateTime={formatDateTime}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Map fills the background */}
       <div className="absolute inset-0 z-0">

@@ -48,7 +48,10 @@ body {
 }
 
 /* Utility tweak: smoother text rendering */
-* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {

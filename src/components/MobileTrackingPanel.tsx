@@ -7,12 +7,6 @@ import Rider from "@/icons/rider";
 import Current from "@/icons/location";
 import Expand from "@/icons/expand";
 import TrackingDetails from "./TrackingDetails";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 
 interface MobileTrackingPanelProps {
   order: Order;
@@ -31,20 +25,22 @@ export default function MobileTrackingPanel({
   formatDateTime,
   formatCurrency,
 }: MobileTrackingPanelProps) {
-  const [isOpen, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="md:hidden">
-      {/* Mobile Header */}
-      <div className="fixed top-4 left-4 right-4 z-30 flex items-center justify-between bg-white shadow-2xl rounded-full p-3">
-        <h1 className="text-2xl font-bold text-yellow-500">VIGO</h1>
-        <div className="flex space-x-2">
+      {/* Mobile Header bar */}
+      <div className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between bg-white px-4 py-3 shadow-sm">
+        <h1 className="text-xl font-extrabold text-yellow-500 tracking-tight">
+          VIGO
+        </h1>
+        <div className="flex items-center space-x-2">
           <button
             title="Show destination"
             onClick={() => setFocus({ type: "dropoff" })}
-            className="p-1 rounded-full bg-[#F9FAF7] hover:bg-gray-100"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F3F4F0] hover:bg-gray-200 transition-colors"
           >
-            <Current width={24} />
+            <Current width={18} />
           </button>
           <button
             title="Show rider"
@@ -61,43 +57,55 @@ export default function MobileTrackingPanel({
               }
               setFocus({ type: "rider" });
             }}
-            className="p-1 rounded-full bg-[#F9FAF7] hover:bg-gray-100"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F3F4F0] hover:bg-gray-200 transition-colors"
           >
-            <Rider width={24} />
+            <Rider width={18} />
           </button>
-          <Sheet open={isOpen} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <button
-                title="Toggle details"
-                className="p-1 rounded-full bg-[#F9FAF7] hover:bg-gray-100"
-              >
-                <span
-                  className={`inline-block transform transition-transform ${
-                    isOpen ? "rotate-0" : "-rotate-90"
-                  }`}
-                >
-                  <Expand width={24} />
-                </span>
-              </button>
-            </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="h-auto max-h-[80vh] rounded-t-3xl flex flex-col"
+          <button
+            title={expanded ? "Collapse details" : "Expand details"}
+            onClick={() => setExpanded((v) => !v)}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F3F4F0] hover:bg-gray-200 transition-colors"
+          >
+            <span
+              className={`inline-block transform transition-transform ${
+                expanded ? "rotate-180" : "rotate-0"
+              }`}
             >
-              <SheetHeader>
-                <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mt-4 mb-4"></div>
-              </SheetHeader>
-              <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
-                <TrackingDetails
-                  order={order}
-                  formatDateTime={formatDateTime}
-                  formatCurrency={formatCurrency}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
+              <Expand width={18} />
+            </span>
+          </button>
         </div>
       </div>
+
+      {/* Bottom sheet — always peeking, expands on demand */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl shadow-2xl transition-all duration-300 ease-in-out ${
+          expanded ? "h-[80vh]" : "h-[45vh]"
+        }`}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
+        {/* Scrollable content */}
+        <div className="h-full overflow-y-auto custom-scrollbar px-5 pb-8">
+          <TrackingDetails
+            order={order}
+            formatDateTime={formatDateTime}
+            formatCurrency={formatCurrency}
+          />
+        </div>
+      </div>
+
+      {/* Toast message */}
+      {errorMessage && (
+        <div className="fixed top-16 left-4 right-4 z-40">
+          <div className="bg-black/80 text-white text-sm px-4 py-2 rounded-xl shadow text-center">
+            {errorMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

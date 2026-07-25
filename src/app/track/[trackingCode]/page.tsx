@@ -91,15 +91,7 @@ export default function TrackingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        Loading order details...
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+      <div className="flex items-center justify-center h-screen bg-gray-50 text-gray-500 text-sm">
         Loading order details...
       </div>
     );
@@ -155,26 +147,27 @@ export default function TrackingPage() {
     order.drop_off_location?.coordinates?.length === 2;
 
   return (
-    <div className="relative h-screen bg-gray-900 font-sans">
+    <div className="relative h-screen bg-gray-100 font-sans">
       {/* Desktop Side Panel */}
       <aside
-        className={`hidden md:flex fixed left-4 top-4 bottom-4 bg-white shadow-2xl rounded-3xl overflow-hidden z-20 flex-row transition-all duration-300 ${
-          collapsed ? "w-24 p-2" : "w-full max-w-lg p-6"
+        className={`hidden md:flex fixed left-4 top-4 bottom-4 bg-white shadow-lg rounded-3xl overflow-hidden z-20 flex-row transition-all duration-300 ${
+          collapsed ? "w-[72px]" : "w-[340px]"
         }`}
       >
+        {/* Left icon bar */}
         <div
-          className={`flex flex-col items-center justify-between bg-[#F9FAF7] transition-all duration-300 ${
-            collapsed ? "w-20 p-2 border-r-0" : "p-3 border-r-2 border-gray-400"
+          className={`flex flex-col items-center justify-between py-5 bg-[#F9FAF7] transition-all duration-300 ${
+            collapsed ? "w-full" : "w-[72px] border-r border-gray-200"
           }`}
         >
-          <h1 className="text-3xl font-bold text-yellow-500">VIGO</h1>
-          <div className="space-y-4">
+          <h1 className="text-xl font-extrabold text-yellow-500 tracking-tight">VIGO</h1>
+          <div className="flex flex-col items-center space-y-3">
             <button
               title="Show destination"
               onClick={() => setFocus({ type: "dropoff" })}
-              className="p-1 rounded hover:bg-white/30"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors"
             >
-              <Current width={collapsed ? 32 : 64} />
+              <Current width={20} />
             </button>
 
             <button
@@ -183,7 +176,6 @@ export default function TrackingPage() {
                 const hasRider =
                   order.courier?.latest_location?.coordinates?.length === 2;
                 if (!hasRider) {
-                  // fallback: focus pickup so user still sees something useful
                   setFocus({ type: "pickup" });
                   setErrorMessage(
                     "Rider location not available — focusing pickup as fallback"
@@ -193,41 +185,37 @@ export default function TrackingPage() {
                 }
                 setFocus({ type: "rider" });
               }}
-              className="p-1 rounded hover:bg-white/30"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors"
             >
-              <Rider width={collapsed ? 32 : 64} />
+              <Rider width={20} />
             </button>
 
             <button
               title={collapsed ? "Expand details" : "Collapse details"}
               onClick={() => setCollapsed((s) => !s)}
-              className="p-1 rounded hover:bg-white/30"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors"
             >
               <span
                 className={`inline-block transform transition-transform ${
-                  collapsed ? "-rotate-90" : "rotate-0"
+                  collapsed ? "rotate-180" : "rotate-0"
                 }`}
               >
-                <Expand width={collapsed ? 28 : 60} />
+                <Expand width={20} />
               </span>
             </button>
           </div>
         </div>
 
         {/* Details column */}
-        <div
-          className={
-            collapsed
-              ? "hidden"
-              : "ml-4 mt-4 space-y-6 overflow-y-auto custom-scrollbar"
-          }
-        >
-          <TrackingDetails
-            order={order}
-            formatDateTime={formatDateTime}
-            formatCurrency={formatCurrency}
-          />
-        </div>
+        {!collapsed && (
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-5 pb-6">
+            <TrackingDetails
+              order={order}
+              formatDateTime={formatDateTime}
+              formatCurrency={formatCurrency}
+            />
+          </div>
+        )}
       </aside>
 
       {/* Mobile Tracking Panel */}
